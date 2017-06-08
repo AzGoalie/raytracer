@@ -28,3 +28,9 @@ fun refract(vector: Vec3, normal: Vec3, niOverNt: Float): RefractResult {
     }
     return RefractResult(false, Vec3())
 }
+
+fun schlick(cosine: Float, refractionIndex: Float): Float {
+    var r0 = (1 - refractionIndex) / (1 + refractionIndex)
+    r0 *= r0
+    return r0 + (1 - r0) * Math.pow((1 - cosine).toDouble(), 5.0).toFloat()
+}

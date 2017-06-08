@@ -24,10 +24,9 @@ import java.util.*
 data class Pixel(val x: Int, val y: Int, val color: Color)
 
 class RaytracedImage : View() {
-    val scale = 4
-    val width = 200 * scale
-    val height = 100 * scale
-    val samples = 100
+    val width = 1200
+    val height = 800
+    val samples = 10
 
     override val root = VBox()
 
@@ -44,8 +43,13 @@ class RaytracedImage : View() {
         val width = image.width.toInt()
         val height = image.height.toInt()
 
-        val camera = Camera()
-        val shapes = createShapes()
+        val lookFrom = Vec3(13f, 2f, 3f)
+        val lookAt = Vec3(0f, 0f, 0f)
+        val distToFocus = 10f
+        val aperture = 0.1f
+        val camera = Camera(lookFrom, lookAt, Vec3(0f, 1f, 0f), 20f, width / height.toFloat(), aperture, distToFocus)
+
+        val shapes = createRandomScene()
 
         val random = Random()
 
@@ -79,7 +83,44 @@ class RaytracedImage : View() {
                 Sphere(Vec3(0f, 0f, -1f), 0.5f, Lambertian(Vec3(0.1f, 0.2f, 0.5f))),
                 Sphere(Vec3(0f, -100.5f, -1f), 100f, Lambertian(Vec3(0.8f, 0.8f, 0.0f))),
                 Sphere(Vec3(1f, 0f, -1f), 0.5f, Metal(Vec3(0.8f, 0.6f, 0.2f), 0.0f)),
-                Sphere(Vec3(-1f, 0f, -1f), 0.5f, Dielectric(1.5f)))
+                Sphere(Vec3(-1f, 0f, -1f), 0.5f, Dielectric(1.5f)),
+                Sphere(Vec3(-1f, 0f, -1f), -0.45f, Dielectric(1.5f)))
+    }
+
+    fun createRandomScene(): List<Hitable> {
+        val n = 500
+        val listOfHitables = arrayListOf<Hitable>()
+        val floor = Sphere(Vec3(0f, -1000f, 0f), 1000f, Lambertian(Vec3(0.5f, 0.5f, 0.5f)))
+
+        listOfHitables.add(floor)
+
+        val random = Random()
+        for (a in -11 until 11) {
+            for (b in -11 until 11) {
+                val chooseMat = random.nextFloat()
+                val center = Vec3(a + 0.9f * random.nextFloat(), 0.2f, b + 0.9f * random.nextFloat())
+                if ((center - Vec3(4f, 0.2f, 0f)).length() > 0.9f) {
+                    if (chooseMat < 0.8f) {
+                        listOfHitables.add(Sphere(center, 0.2f, Lambertian(Vec3(random.nextFloat() * random.nextFloat(),
+                                random.nextFloat() * random.nextFloat(),
+                                random.nextFloat() * random.nextFloat()))))
+                    } else if (chooseMat < 0.95) {
+                        listOfHitables.add(Sphere(center, 0.2f, Metal(Vec3(
+                                0.5f * (1 + random.nextFloat()),
+                                0.5f * (1 + random.nextFloat()),
+                                0.5f * random.nextFloat()), 0.5f * random.nextFloat())))
+                    } else {
+                        listOfHitables.add(Sphere(center, 0.2f, Dielectric(1.5f)))
+                    }
+                }
+            }
+        }
+
+        listOfHitables.add(Sphere(Vec3(0f, 1f, 0f), 1.0f, Dielectric(1.5f)))
+        listOfHitables.add(Sphere(Vec3(-4f, 1f, 0f), 1.0f, Lambertian(Vec3(0.4f, 0.2f, 0.1f))))
+        listOfHitables.add(Sphere(Vec3(4f, 1f, 0f), 1.0f, Metal(Vec3(0.7f, 0.6f, 0.5f), 0.0f)))
+
+        return listOfHitables
     }
 
     fun gammaCorrection(color: Vec3): Color {
