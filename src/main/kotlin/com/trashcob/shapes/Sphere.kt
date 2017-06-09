@@ -7,7 +7,7 @@ import java.lang.Math.sqrt
 
 data class Sphere(val center: Vec3, val radius: Float, val material: Material) : Hitable {
 
-    override fun hit(ray: Ray, tMin: Float, tMax: Float): HitRecord {
+    override fun hit(ray: Ray, tMin: Float, tMax: Float): HitRecord? {
         val oc = ray.origin - center
         val a = ray.direction.dot(ray.direction)
         val b = oc.dot(ray.direction)
@@ -21,8 +21,7 @@ data class Sphere(val center: Vec3, val radius: Float, val material: Material) :
                         time = temp,
                         point = ray.pointInTime(temp),
                         normal = (ray.pointInTime(temp) - center) / radius,
-                        material = material,
-                        hit = true
+                        material = material
                 )
             }
 
@@ -32,12 +31,11 @@ data class Sphere(val center: Vec3, val radius: Float, val material: Material) :
                         time = temp,
                         point = ray.pointInTime(temp),
                         normal = (ray.pointInTime(temp) - center) / radius,
-                        material = material,
-                        hit = true
+                        material = material
                 )
             }
         }
 
-        return HitRecord(hit = false)
+        return null
     }
 }

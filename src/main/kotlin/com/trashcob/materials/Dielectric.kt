@@ -14,30 +14,27 @@ data class Dielectric(val refractionIndex: Float) : Material {
 
         val outwardNormal: Vec3
         val niOverNt: Float
-
         val cosine: Float
-        if (rayIn.direction.dot(hitRecord.normal) > 0) {
-            outwardNormal = -hitRecord.normal
-            niOverNt = refractionIndex
-            cosine = refractionIndex * rayIn.direction.dot(hitRecord.normal) / rayIn.direction.length()
-        } else {
-            outwardNormal = hitRecord.normal
-            niOverNt = 1.0f / refractionIndex
-            cosine = -rayIn.direction.dot(hitRecord.normal) / rayIn.direction.length()
+
+        when {
+            rayIn.direction.dot(hitRecord.normal) > 0 -> {
+                outwardNormal = -hitRecord.normal
+                niOverNt = refractionIndex
+                cosine = refractionIndex * rayIn.direction.dot(hitRecord.normal) / rayIn.direction.length()
+            }
+            else -> {
+                outwardNormal = hitRecord.normal
+                niOverNt = 1.0f / refractionIndex
+                cosine = -rayIn.direction.dot(hitRecord.normal) / rayIn.direction.length()
+            }
         }
 
         val refractResult = refract(rayIn.direction, outwardNormal, niOverNt)
-        val reflectionProbability: Float
-        if (refractResult.hit) {
-            reflectionProbability = schlick(cosine, refractionIndex)
-        } else {
-            reflectionProbability = 1.0f
-        }
+        val reflectionProbability = refractResult?.let { schlick(cosine, refractionIndex) } ?: 1.0f
 
-        if (random.nextFloat() < reflectionProbability) {
-            return MaterialHitRecord(attenuation, Ray(hitRecord.point, reflected), true)
-        } else {
-            return MaterialHitRecord(attenuation, Ray(hitRecord.point, refractResult.refracted), true)
+        when (random.nextFloat()) {
+            in 0f..reflectionProbability -> return MaterialHitRecord(attenuation, Ray(hitRecord.point, reflected))
+            else -> return MaterialHitRecord(attenuation, Ray(hitRecord.point, refractResult?.refracted ?: Vec3()))
         }
     }
 }

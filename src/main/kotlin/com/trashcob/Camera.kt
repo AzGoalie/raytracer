@@ -9,21 +9,21 @@ import java.util.*
 data class Camera(val lookFrom: Vec3, val lookAt: Vec3, val up: Vec3,
                   val vFov: Float, val aspectRatio: Float, val aperture: Float,
                   val focusDist: Float) {
-    val lensRadius = aperture / 2
+    private val lensRadius = aperture / 2
 
-    val theta = vFov * Math.PI / 180
-    val halfHeight = Math.tan(theta / 2).toFloat()
-    val halfWidth = aspectRatio * halfHeight
+    private val theta = vFov * Math.PI / 180
+    private val halfHeight = Math.tan(theta / 2).toFloat()
+    private val halfWidth = aspectRatio * halfHeight
 
-    val w = (lookFrom - lookAt).unit()
-    val u = up.cross(w).unit()
-    val v = w.cross(u)
+    private val w = (lookFrom - lookAt).unit()
+    private val u = up.cross(w).unit()
+    private val v = w.cross(u)
 
-    val lowerLeftCorner = lookFrom - halfWidth * focusDist * u - halfHeight * focusDist * v - focusDist * w
-    val horizontal = 2 * halfWidth * focusDist * u
-    val vertical = 2 * halfHeight * focusDist * v
+    private val lowerLeftCorner = lookFrom - halfWidth * focusDist * u - halfHeight * focusDist * v - focusDist * w
+    private val horizontal = 2 * halfWidth * focusDist * u
+    private val vertical = 2 * halfHeight * focusDist * v
 
-    val random = Random()
+    private val random = Random()
 
     fun getRay(s: Float, t: Float): Ray {
         val rd = lensRadius * randomVecInUnitDisk()
